@@ -26,7 +26,6 @@ def close(session_attributes, fulfillment_state, message):
             'message': message
         }
     }
-
     return response
 
 
@@ -84,7 +83,6 @@ def delegate(session_attributes, slots):
         }
     }
 
-
 # Action Functions
 
 def Greeting(intent_request):
@@ -93,7 +91,7 @@ def Greeting(intent_request):
             "type": "ElicitIntent",
             'message': {
                 'contentType': 'PlainText',
-                'content': 'Hi there, how can I help?'}
+                'content': 'Hi there, how can I help you today?'}
         }
     }
 
@@ -104,7 +102,7 @@ def ThankyouIntent(intent_request):
             "type": "ElicitIntent",
             'message': {
                 'contentType': 'PlainText',
-                'content': 'Nice to talk to you! Thank you and visit again!'}
+                'content': 'Nice to talk to you! Glad to be of help!'}
         }
     }
 
@@ -120,11 +118,11 @@ def validateIntentSlots(location, cuisine, num_people, date, given_time):
                                        'location',
                                        'Sorry! We do not serve recommendations for this location right now!')
 
-    cuisines = ['french','indian', 'mexican', 'italian', 'chinese', 'thai']
+    cuisines = ['french', 'indian', 'mexican', 'italian', 'chinese', 'thai']
     if cuisine is not None and cuisine.lower() not in cuisines:
         return build_validation_result(False,
                                        'cuisine',
-                                       'Sorry! We do not serve recommendations for this cuisine right now!')
+                                       'We are sorry! We do not serve recommendations for this cuisine right now!')
 
     if num_people is not None:
         num_people = int(num_people)
@@ -143,12 +141,16 @@ def validateIntentSlots(location, cuisine, num_people, date, given_time):
                                            'You can search restaurant from today onwards. What day would you like to search?')
 
     if given_time:
+        d = datetime.datetime.now()
         hour, minute = given_time.split(':')
         hour = parse_int(hour)
         minute = parse_int(minute)
+
         if math.isnan(hour) or math.isnan(minute):
             # Not a valid time; use a prompt defined on the build-time model.
             return build_validation_result(False, 'time', 'Not a valid time')
+        if parse_int(d.hour) > hour and d.day == datetime.datetime.strptime(date, '%Y-%m-%d').date().day :
+            return build_validation_result(False,'time','This app does not support time travel :) Please enter a valid time')
 
     return build_validation_result(True, None, None)
 
@@ -188,7 +190,7 @@ def dining_suggestion_intent(intent_request):
         if not validation_result['isValid']:
             slots[validation_result['violatedSlot']] = None
             print
-            "elicit slot"
+            ("elicit slot")
             return elicit_slot(session_attributes,
                                intent_request['currentIntent']['name'],
                                slots,
